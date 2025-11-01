@@ -112,11 +112,11 @@ def contact_info() -> rx.Component:
 
 def payment_section() -> rx.Component:
     return rx.el.div(
-        rx.el.h2(
-            "Enroll in a Course", class_name="text-3xl font-bold text-gray-900 mb-6"
-        ),
+        rx.el.h2("Make a Payment", class_name="text-3xl font-bold text-gray-900 mb-6"),
         rx.el.div(
-            rx.el.p("Enter an amount and proceed to payment."),
+            rx.el.p(
+                "For course enrollment, invoice payment, or other services, please enter the amount and proceed."
+            ),
             rx.el.input(
                 placeholder="Enter amount in INR",
                 type="number",
