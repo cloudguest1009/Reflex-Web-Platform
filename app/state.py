@@ -213,9 +213,10 @@ class AppState(rx.State):
     contact_submission_message: str = ""
     current_service_index: int = 0
     is_playing: bool = True
-    payment_amount: int = 1000
+    payment_amount: int = 0
     payment_status: str = ""
     payment_id: str = ""
+    order_id: str = ""
 
     @rx.var
     def current_service(self) -> Service:
@@ -270,23 +271,48 @@ class AppState(rx.State):
             return
         try:
             order_data = {
-                "amount": self.payment_amount,
+                "amount": self.payment_amount * 100,
                 "currency": "INR",
                 "receipt": f"receipt_{random.randint(1, 1000)}",
             }
             order = client.order.create(data=order_data)
-            self.payment_status = "Order created"
-            return rx.call_script(
-                f"start_payment('{order['id']}', {self.payment_amount})"
-            )
+            self.payment_status = "Order created. Redirecting to payment..."
+            razorpay_options = {
+                "key": RAZORPAY_KEY_ID,
+                "amount": self.payment_amount * 100,
+                "currency": "INR",
+                "name": "DhaAdh Solutions",
+                "description": "Course Enrollment Payment",
+                "image": "/style_minimalist_modern.png",
+                "order_id": order["id"],
+                "handler": "handle_payment_full_callback",
+                "prefill": {"name": "", "email": "", "contact": ""},
+                "notes": {"address": "DhaAdh Solutions Office"},
+                "theme": {"color": "#3399cc"},
+            }
+            return rx.call_script(f"start_payment({razorpay_options})")
         except Exception as e:
             logging.exception(f"Error creating order: {e}")
             self.payment_status = f"Error creating order: {e}"
 
     @rx.event
-    def handle_payment_success(self, payment_id: str):
+    def handle_payment_success(self, payment_id: str, order_id: str, signature: str):
         self.payment_id = payment_id
+        self.order_id = order_id
         self.payment_status = f"Payment successful! Payment ID: {payment_id}"
+        try:
+            params_dict = {
+                "razorpay_order_id": order_id,
+                "razorpay_payment_id": payment_id,
+                "razorpay_signature": signature,
+            }
+            client.utility.verify_payment_signature(params_dict)
+            self.payment_status = (
+                f"Payment verified and successful! Payment ID: {payment_id}"
+            )
+        except Exception as e:
+            logging.exception(f"Payment verification failed: {e}")
+            self.payment_status = f"Payment verification failed: {e}"
 
     @rx.event
     def handle_payment_error(self, error: dict):

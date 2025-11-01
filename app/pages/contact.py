@@ -110,6 +110,31 @@ def contact_info() -> rx.Component:
     )
 
 
+def payment_section() -> rx.Component:
+    return rx.el.div(
+        rx.el.h2(
+            "Enroll in a Course", class_name="text-3xl font-bold text-gray-900 mb-6"
+        ),
+        rx.el.div(
+            rx.el.p("Enter an amount and proceed to payment."),
+            rx.el.input(
+                placeholder="Enter amount in INR",
+                type="number",
+                on_change=AppState.set_payment_amount,
+                class_name="w-full px-4 py-2 mt-4 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition-shadow",
+            ),
+            rx.el.button(
+                "Pay Now",
+                on_click=AppState.create_razorpay_order,
+                class_name="w-full mt-4 px-8 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-semibold shadow-lg hover:shadow-green-500/30",
+            ),
+            rx.el.p(AppState.payment_status, class_name="mt-4 text-sm text-gray-600"),
+            class_name="space-y-4",
+        ),
+        class_name="bg-white p-8 md:p-12 rounded-2xl border border-gray-200 shadow-sm",
+    )
+
+
 def contact() -> rx.Component:
     return base_layout(
         rx.el.div(
@@ -126,6 +151,7 @@ def contact() -> rx.Component:
                     contact_form(),
                     class_name="grid lg:grid-cols-2 gap-16 max-w-6xl mx-auto bg-white p-8 md:p-12 rounded-2xl border border-gray-200 shadow-sm",
                 ),
+                rx.el.div(payment_section(), class_name="max-w-xl mx-auto px-4 py-16"),
                 class_name="px-4 pb-16",
             ),
             on_mount=AppState.reset_contact_form,

@@ -21,6 +21,8 @@ app = rx.App(
             href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap",
             rel="stylesheet",
         ),
+        rx.el.script(src="https://checkout.razorpay.com/v1/checkout.js"),
+        rx.el.script(src="/payment.js"),
     ],
 )
 app.add_page(index, route="/", title="DhaAdh Solutions - Home")
