@@ -1,6 +1,14 @@
 import reflex as rx
 import asyncio
+import razorpay
+import os
+import random
+import logging
 from typing import TypedDict, Optional
+
+RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID", "your_key_id")
+RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET", "your_key_secret")
+client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
 
 
 class Service(TypedDict):
@@ -205,6 +213,9 @@ class AppState(rx.State):
     contact_submission_message: str = ""
     current_service_index: int = 0
     is_playing: bool = True
+    payment_amount: int = 1000
+    payment_status: str = ""
+    payment_id: str = ""
 
     @rx.var
     def current_service(self) -> Service:
@@ -249,3 +260,36 @@ class AppState(rx.State):
     @rx.event
     def reset_contact_form(self):
         self.contact_form_data = {}
+        self.contact_submitted = False
+        self.contact_submission_message = ""
+
+    @rx.event
+    async def create_razorpay_order(self):
+        if self.payment_amount <= 0:
+            self.payment_status = "Please enter a valid amount."
+            return
+        try:
+            order_data = {
+                "amount": self.payment_amount,
+                "currency": "INR",
+                "receipt": f"receipt_{random.randint(1, 1000)}",
+            }
+            order = client.order.create(data=order_data)
+            self.payment_status = "Order created"
+            return rx.call_script(
+                f"start_payment('{order['id']}', {self.payment_amount})"
+            )
+        except Exception as e:
+            logging.exception(f"Error creating order: {e}")
+            self.payment_status = f"Error creating order: {e}"
+
+    @rx.event
+    def handle_payment_success(self, payment_id: str):
+        self.payment_id = payment_id
+        self.payment_status = f"Payment successful! Payment ID: {payment_id}"
+
+    @rx.event
+    def handle_payment_error(self, error: dict):
+        self.payment_status = (
+            f"Payment failed: {error.get('description', 'Unknown error')}"
+        )

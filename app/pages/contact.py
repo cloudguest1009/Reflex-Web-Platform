@@ -128,5 +128,6 @@ def contact() -> rx.Component:
                 ),
                 class_name="px-4 pb-16",
             ),
+            on_mount=AppState.reset_contact_form,
         )
     )
