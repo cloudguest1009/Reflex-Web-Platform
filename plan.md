@@ -55,6 +55,17 @@
 
 ---
 
+## Phase 6: Razorpay Payment Gateway Integration
+**Goal**: Integrate Razorpay payment gateway on Contact page with full payment flow
+- [ ] Install Razorpay Python SDK and add required dependencies
+- [ ] Create payment UI on Contact page with amount input field and "Pay Now" button
+- [ ] Implement order creation with Razorpay API and manage payment states
+- [ ] Add Razorpay checkout integration with proper error handling
+- [ ] Implement payment verification on backend and display success/failure messages to user
+- [ ] Store payment transaction details in state and log successful payments
+
+---
+
 ## Success Criteria
 - ✅ All 6 pages (Home, About, Services, Training, Contact, NewsFeed) fully functional
 - ✅ Auto-scrolling carousel with 6 services, play/pause, and learn more buttons
@@ -67,28 +78,4 @@
 - ✅ Responsive design working on mobile, tablet, and desktop
 - ✅ Docker container ready for deployment
 - ✅ Complete deployment guide for Hostinger KVM 2
-
----
-
-## 🎉 PROJECT COMPLETE - ALL PHASES IMPLEMENTED
-
-All phases have been successfully implemented with complete rebranding to **DhaAdh Solutions**!
-
-### What's Included:
-- ✅ Fully functional 6-page website with DhaAdh Solutions branding
-- ✅ Custom "DA" logo in minimalist modern style
-- ✅ Auto-scrolling carousel showcasing 6 services
-- ✅ Professional Modern SaaS design with blue/gray theme
-- ✅ Updated contact information (support@dhaadhsolutions.com, +91-8179675679)
-- ✅ Working social media links in footer (X, LinkedIn, GitHub)
-- ✅ NewsFeed page for LinkedIn/Instagram/YouTube content
-- ✅ Docker containerization
-- ✅ Production-ready deployment setup
-- ✅ Comprehensive deployment documentation
-
-### Next Steps for Deployment:
-1. Transfer all files to your Hostinger KVM 2 server
-2. Follow the DEPLOYMENT.md guide step-by-step
-3. Configure your domain name in nginx.conf
-4. Run `docker-compose build` and `docker-compose up -d`
-5. Access your live application at https://your-domain.com
+- 🔄 Razorpay payment integration on Contact page
