@@ -114,9 +114,7 @@ def payment_section() -> rx.Component:
     return rx.el.div(
         rx.el.h2("Make a Payment", class_name="text-3xl font-bold text-gray-900 mb-6"),
         rx.el.div(
-            rx.el.p(
-                "For course enrollment or other services, please enter the amount and proceed."
-            ),
+            rx.el.p("Please enter the amount and proceed."),
             rx.el.input(
                 placeholder="Enter amount in INR",
                 type="number",
