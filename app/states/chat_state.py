@@ -3,6 +3,7 @@ import asyncio
 from typing import TypedDict
 import httpx
 import logging
+import json
 
 
 class Message(TypedDict):
@@ -46,7 +47,16 @@ class ChatState(rx.State):
                     webhook_url, json={"message": user_message}, timeout=30
                 )
                 response.raise_for_status()
-                bot_response = response.text
+                bot_response_text = response.text
+                try:
+                    json_response = json.loads(bot_response_text)
+                    if isinstance(json_response, dict) and "output" in json_response:
+                        bot_response = json_response["output"]
+                    else:
+                        bot_response = bot_response_text
+                except json.JSONDecodeError as e:
+                    logging.exception(f"Error decoding JSON from webhook: {e}")
+                    bot_response = bot_response_text
         except httpx.HTTPStatusError as e:
             logging.exception(f"HTTP error calling webhook: {e}")
             bot_response = (
