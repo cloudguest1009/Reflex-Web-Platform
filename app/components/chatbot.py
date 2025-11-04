@@ -41,7 +41,9 @@ def chatbot_window() -> rx.Component:
     return rx.el.div(
         rx.el.div(
             rx.el.div(
-                rx.el.h3("AI Assistant", class_name="text-lg font-bold text-gray-800"),
+                rx.el.h3(
+                    "DhaAdh Assistant", class_name="text-lg font-bold text-gray-800"
+                ),
                 rx.el.button(
                     rx.icon("x", class_name="h-5 w-5 text-gray-600"),
                     on_click=ChatState.toggle_chat,
