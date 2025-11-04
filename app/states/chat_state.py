@@ -46,10 +46,7 @@ class ChatState(rx.State):
                     webhook_url, json={"message": user_message}, timeout=30
                 )
                 response.raise_for_status()
-                response_data = response.json()
-                bot_response = response_data.get(
-                    "response", "Sorry, I could not process that."
-                )
+                bot_response = response.text
         except httpx.HTTPStatusError as e:
             logging.exception(f"HTTP error calling webhook: {e}")
             bot_response = (
