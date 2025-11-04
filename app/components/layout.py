@@ -1,5 +1,7 @@
 import reflex as rx
 from app.state import AppState
+from app.states.chat_state import ChatState
+from app.components.chatbot import chatbot_widget
 
 
 def nav_link(text: str, href: str) -> rx.Component:
@@ -107,5 +109,6 @@ def base_layout(child: rx.Component, *args, **kwargs) -> rx.Component:
         header(),
         rx.el.main(child, class_name="flex-grow"),
         footer(),
+        chatbot_widget(),
         class_name="flex flex-col min-h-screen bg-white font-['Lato']",
     )

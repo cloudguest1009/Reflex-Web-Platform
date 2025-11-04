@@ -6,10 +6,21 @@ from app.pages.training import training
 from app.pages.contact import contact
 from app.pages.newsfeed import newsfeed
 from app.state import AppState
+from app.states.chat_state import ChatState
+from fastapi import FastAPI
 
 
 def index() -> rx.Component:
     return home()
+
+
+api_app = FastAPI()
+
+
+@api_app.post("/webhook")
+async def webhook(payload: dict):
+    print("Received webhook payload:", payload)
+    return {"status": "received"}
 
 
 app = rx.App(
@@ -24,6 +35,7 @@ app = rx.App(
         rx.el.script(src="https://checkout.razorpay.com/v1/checkout.js"),
         rx.el.script(src="/payment.js"),
     ],
+    api_transformer=api_app,
 )
 app.add_page(index, route="/", title="DhaAdh Solutions - Home")
 app.add_page(about, route="/about", title="About Us")
