@@ -40,7 +40,7 @@ class ChatState(rx.State):
             self.messages.append({"sender": "bot", "text": "", "is_typing": True})
         bot_response = "Sorry, something went wrong."
         try:
-            webhook_url = "https://n8n.dhaadhsolutions.com/webhook/DhaAdh"
+            webhook_url = "https://n8n.dhaadhsolutions.com/webhook-test/DhaAdh"
             async with httpx.AsyncClient() as client:
                 response = await client.post(
                     webhook_url, json={"message": user_message}, timeout=30
