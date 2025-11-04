@@ -1,6 +1,8 @@
 import reflex as rx
 import asyncio
 from typing import TypedDict
+import httpx
+import logging
 
 
 class Message(TypedDict):
@@ -36,8 +38,26 @@ class ChatState(rx.State):
             self.current_message = ""
         async with self:
             self.messages.append({"sender": "bot", "text": "", "is_typing": True})
-        await asyncio.sleep(1.5)
-        bot_response = f"Echoing: {user_message}"
+        bot_response = "Sorry, something went wrong."
+        try:
+            webhook_url = "https://n8n.dhaadhsolutions.com/webhook/DhaAdh"
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    webhook_url, json={"message": user_message}, timeout=30
+                )
+                response.raise_for_status()
+                response_data = response.json()
+                bot_response = response_data.get(
+                    "response", "Sorry, I could not process that."
+                )
+        except httpx.HTTPStatusError as e:
+            logging.exception(f"HTTP error calling webhook: {e}")
+            bot_response = (
+                f"Error communicating with AI assistant: {e.response.status_code}"
+            )
+        except Exception as e:
+            logging.exception(f"Error calling webhook: {e}")
+            bot_response = "An unexpected error occurred."
         async with self:
             self.messages.pop()
             self.messages.append(
