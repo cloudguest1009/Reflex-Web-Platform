@@ -110,24 +110,69 @@ def contact_info() -> rx.Component:
     )
 
 
+def currency_selector() -> rx.Component:
+    return rx.el.div(
+        rx.el.label(
+            "Select Currency", class_name="block text-sm font-medium text-gray-700 mb-2"
+        ),
+        rx.el.div(
+            rx.foreach(
+                AppState.currencies,
+                lambda currency: rx.el.button(
+                    rx.el.span(currency["flag"], class_name="text-lg"),
+                    rx.el.span(currency["code"], class_name="font-semibold"),
+                    on_click=lambda: AppState.select_currency(currency["code"]),
+                    class_name=rx.cond(
+                        AppState.selected_currency == currency["code"],
+                        "flex items-center gap-2 px-4 py-2 rounded-lg border-2 border-blue-500 bg-blue-50 transition-all",
+                        "flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 transition-all",
+                    ),
+                ),
+            ),
+            class_name="flex gap-2 overflow-x-auto pb-2",
+        ),
+        class_name="w-full mb-6",
+    )
+
+
 def payment_section() -> rx.Component:
     return rx.el.div(
         rx.el.h2("Make a Payment", class_name="text-3xl font-bold text-gray-900 mb-6"),
-        rx.el.div(
-            rx.el.p("Please enter the amount and proceed."),
-            rx.el.input(
-                placeholder="Enter amount in INR",
-                type="number",
-                on_change=AppState.set_payment_amount,
-                class_name="w-full px-4 py-2 mt-4 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition-shadow",
+        currency_selector(),
+        rx.cond(
+            AppState.show_qr_code,
+            rx.el.div(
+                rx.image(
+                    src=AppState.paynow_qr_code_url,
+                    class_name="w-48 h-48 mx-auto rounded-lg border p-1",
+                ),
+                rx.el.p(
+                    "Scan the QR code with your banking app.",
+                    class_name="text-center text-sm text-gray-600 mt-2",
+                ),
+                class_name="flex flex-col items-center justify-center p-4 bg-gray-50 rounded-lg",
             ),
-            rx.el.button(
-                "Pay Now",
-                on_click=AppState.create_razorpay_order,
-                class_name="w-full mt-4 px-8 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-semibold shadow-lg hover:shadow-green-500/30",
+            rx.el.div(
+                rx.el.p(
+                    f"You are paying in {AppState.selected_currency}.",
+                    class_name="text-sm text-gray-600",
+                ),
+                rx.el.input(
+                    placeholder=AppState.amount_placeholder,
+                    type="number",
+                    on_change=AppState.set_payment_amount,
+                    class_name="w-full px-4 py-2 mt-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition-shadow",
+                ),
+                rx.el.button(
+                    "Pay Now",
+                    on_click=AppState.initiate_payment,
+                    class_name="w-full mt-4 px-8 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-semibold shadow-lg hover:shadow-green-500/30",
+                ),
+                class_name="space-y-4",
             ),
-            rx.el.p(AppState.payment_status, class_name="mt-4 text-sm text-gray-600"),
-            class_name="space-y-4",
+        ),
+        rx.el.p(
+            AppState.payment_status, class_name="mt-4 text-sm text-gray-600 text-center"
         ),
         class_name="bg-white p-8 md:p-12 rounded-2xl border border-gray-200 shadow-sm",
     )

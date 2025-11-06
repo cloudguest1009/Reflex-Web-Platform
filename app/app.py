@@ -33,6 +33,7 @@ app = rx.App(
             rel="stylesheet",
         ),
         rx.el.script(src="https://checkout.razorpay.com/v1/checkout.js"),
+        rx.el.script(src="https://js.stripe.com/v3/"),
         rx.el.script(src="/payment.js"),
     ],
     api_transformer=api_app,

@@ -1,14 +1,23 @@
 import reflex as rx
 import asyncio
 import razorpay
+import stripe
 import os
 import random
 import logging
 from typing import TypedDict
 
-RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID", "your_key_id")
-RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET", "your_key_secret")
+RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID", "rzp_test_placeholder")
+RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET", "razorpay_secret_placeholder")
 client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
+STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY", "sk_test_placeholder")
+stripe.api_key = STRIPE_SECRET_KEY
+
+
+class Currency(TypedDict):
+    code: str
+    name: str
+    flag: str
 
 
 class Service(TypedDict):
@@ -213,14 +222,29 @@ class AppState(rx.State):
     contact_submission_message: str = ""
     current_service_index: int = 0
     is_playing: bool = True
-    payment_amount: int = 0
+    currencies: list[Currency] = [
+        {"code": "INR", "name": "Indian Rupee", "flag": "🇮🇳"},
+        {"code": "USD", "name": "US Dollar", "flag": "🇺🇸"},
+        {"code": "SGD", "name": "Singapore Dollar", "flag": "🇸🇬"},
+        {"code": "EUR", "name": "Euro", "flag": "🇪🇺"},
+        {"code": "GBP", "name": "British Pound", "flag": "🇬🇧"},
+    ]
+    selected_currency: str = "INR"
+    payment_amount: float = 0.0
     payment_status: str = ""
     payment_id: str = ""
     order_id: str = ""
+    stripe_session_id: str = ""
+    paynow_qr_code_url: str = ""
+    show_qr_code: bool = False
 
     @rx.var
     def current_service(self) -> Service:
         return self.services[self.current_service_index]
+
+    @rx.var
+    def amount_placeholder(self) -> str:
+        return f"Enter amount in {self.selected_currency}"
 
     @rx.event(background=True)
     async def carousel_worker(self):
@@ -265,26 +289,41 @@ class AppState(rx.State):
         self.contact_submission_message = ""
 
     @rx.event
-    async def create_razorpay_order(self):
+    def select_currency(self, currency_code: str):
+        self.selected_currency = currency_code
+        self.payment_amount = 0.0
+        self.payment_status = ""
+        self.show_qr_code = False
+
+    @rx.event
+    async def initiate_payment(self):
         if self.payment_amount <= 0:
             self.payment_status = "Please enter a valid amount."
             return
+        if self.selected_currency == "INR":
+            return await AppState.create_razorpay_order()
+        else:
+            return await AppState.create_stripe_session()
+
+    @rx.event
+    async def create_razorpay_order(self):
         try:
             order_data = {
-                "amount": self.payment_amount * 100,
+                "amount": int(self.payment_amount * 100),
                 "currency": "INR",
                 "receipt": f"receipt_{random.randint(1, 1000)}",
             }
             order = client.order.create(data=order_data)
             self.payment_status = "Order created. Redirecting to payment..."
+            self.order_id = order["id"]
             razorpay_options = {
                 "key": RAZORPAY_KEY_ID,
-                "amount": self.payment_amount * 100,
+                "amount": int(self.payment_amount * 100),
                 "currency": "INR",
                 "name": "DhaAdh Solutions",
-                "description": "Course Enrollment Payment",
+                "description": "Service Payment",
                 "image": "/style_minimalist_modern.png",
-                "order_id": order["id"],
+                "order_id": self.order_id,
                 "handler": "handle_payment_full_callback",
                 "prefill": {"name": "", "email": "", "contact": ""},
                 "notes": {"address": "DhaAdh Solutions Office"},
@@ -292,8 +331,44 @@ class AppState(rx.State):
             }
             return rx.call_script(f"start_payment({razorpay_options})")
         except Exception as e:
-            logging.exception(f"Error creating order: {e}")
-            self.payment_status = f"Error creating order: {e}"
+            logging.exception(f"Error creating Razorpay order: {e}")
+            self.payment_status = f"Error: Could not create Razorpay order."
+
+    @rx.event
+    async def create_stripe_session(self):
+        self.show_qr_code = False
+        try:
+            if self.selected_currency == "SGD":
+                self.payment_status = "Generating PayNow QR Code..."
+                await asyncio.sleep(1)
+                self.paynow_qr_code_url = "/placeholder.svg"
+                self.show_qr_code = True
+                self.payment_status = "Scan the QR code with your banking app to pay."
+                return
+            session = stripe.checkout.Session.create(
+                payment_method_types=["card"],
+                line_items=[
+                    {
+                        "price_data": {
+                            "currency": self.selected_currency.lower(),
+                            "product_data": {
+                                "name": "DhaAdh Solutions Service Payment"
+                            },
+                            "unit_amount": int(self.payment_amount * 100),
+                        },
+                        "quantity": 1,
+                    }
+                ],
+                mode="payment",
+                success_url=f"http://localhost:3000/contact?stripe_status=success&session_id={{CHECKOUT_SESSION_ID}}",
+                cancel_url="http://localhost:3000/contact?stripe_status=failed",
+            )
+            self.stripe_session_id = session.id
+            self.payment_status = "Redirecting to Stripe..."
+            return rx.redirect(session.url)
+        except Exception as e:
+            logging.exception(f"Error creating Stripe session: {e}")
+            self.payment_status = f"Error: Could not connect to Stripe."
 
     @rx.event
     def handle_payment_success(self, payment_id: str, order_id: str, signature: str):

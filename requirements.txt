@@ -4,3 +4,4 @@ PyGithub
 razorpay
 fastapi
 httpx
+stripe
