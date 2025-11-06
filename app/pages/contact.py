@@ -174,7 +174,7 @@ def payment_section() -> rx.Component:
         rx.el.p(
             AppState.payment_status, class_name="mt-4 text-sm text-gray-600 text-center"
         ),
-        class_name="bg-white p-8 md:p-12 rounded-2xl border border-gray-200 shadow-sm",
+        class_name="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm h-full",
     )
 
 
@@ -191,14 +191,11 @@ def contact() -> rx.Component:
             rx.el.div(
                 contact_info(),
                 rx.el.div(
-                    rx.el.div(
-                        contact_form(),
-                        class_name="bg-white p-8 md:p-12 rounded-2xl border border-gray-200 shadow-sm",
-                    ),
-                    rx.el.div(payment_section()),
-                    class_name="grid gap-8 items-start",
+                    contact_form(),
+                    class_name="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm h-full",
                 ),
-                class_name="grid lg:grid-cols-2 gap-16 max-w-7xl mx-auto px-4 pb-16 items-start",
+                payment_section(),
+                class_name="grid lg:grid-cols-3 gap-8 max-w-7xl mx-auto px-4 pb-16 items-start",
             ),
             on_mount=AppState.reset_contact_form,
         )
