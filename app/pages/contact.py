@@ -189,13 +189,16 @@ def contact() -> rx.Component:
                 class_name="py-12 text-center",
             ),
             rx.el.div(
+                contact_info(),
                 rx.el.div(
-                    contact_info(),
-                    contact_form(),
-                    class_name="grid lg:grid-cols-2 gap-16 max-w-6xl mx-auto bg-white p-8 md:p-12 rounded-2xl border border-gray-200 shadow-sm",
+                    rx.el.div(
+                        contact_form(),
+                        class_name="bg-white p-8 md:p-12 rounded-2xl border border-gray-200 shadow-sm",
+                    ),
+                    rx.el.div(payment_section()),
+                    class_name="grid gap-8 items-start",
                 ),
-                rx.el.div(payment_section(), class_name="max-w-xl mx-auto px-4 py-16"),
-                class_name="px-4 pb-16",
+                class_name="grid lg:grid-cols-2 gap-16 max-w-7xl mx-auto px-4 pb-16 items-start",
             ),
             on_mount=AppState.reset_contact_form,
         )
