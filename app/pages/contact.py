@@ -119,17 +119,17 @@ def currency_selector() -> rx.Component:
             rx.foreach(
                 AppState.currencies,
                 lambda currency: rx.el.button(
-                    rx.el.span(currency["flag"], class_name="text-lg"),
+                    rx.el.span(currency["flag"], class_name="text-xl"),
                     rx.el.span(currency["code"], class_name="font-semibold"),
                     on_click=lambda: AppState.select_currency(currency["code"]),
                     class_name=rx.cond(
                         AppState.selected_currency == currency["code"],
-                        "flex items-center gap-2 px-4 py-2 rounded-lg border-2 border-blue-500 bg-blue-50 transition-all",
-                        "flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 transition-all",
+                        "flex items-center gap-3 px-4 py-2 rounded-xl border-2 border-blue-500 bg-blue-50 transition-all shadow-sm shrink-0",
+                        "flex items-center gap-3 px-4 py-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 transition-all shrink-0",
                     ),
                 ),
             ),
-            class_name="flex gap-2 overflow-x-auto pb-2",
+            class_name="flex space-x-3 overflow-x-auto pb-2",
         ),
         class_name="w-full mb-6",
     )
@@ -188,14 +188,14 @@ def contact() -> rx.Component:
                 ),
                 class_name="py-12 text-center",
             ),
+            rx.el.div(contact_info(), class_name="max-w-7xl mx-auto px-4 pb-8"),
             rx.el.div(
-                contact_info(),
                 rx.el.div(
                     contact_form(),
-                    class_name="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm h-full",
+                    class_name="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm h-full",
                 ),
                 payment_section(),
-                class_name="grid lg:grid-cols-3 gap-8 max-w-7xl mx-auto px-4 pb-16 items-start",
+                class_name="grid lg:grid-cols-2 gap-12 items-start max-w-7xl mx-auto px-4 pb-16",
             ),
             on_mount=AppState.reset_contact_form,
         )
